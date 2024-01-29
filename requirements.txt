@@ -1,4 +1,5 @@
 pandas
 seaborn==0.13.2
 matplotlib
+scikit-learn
 -e .
