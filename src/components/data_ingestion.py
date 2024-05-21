@@ -1,62 +1,82 @@
 import os
 import sys
-from src.exception import CustomException
+from  src.exception import CustomException
 from src.logger import logging
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
 
+
+
 @dataclass
-class DataIngestionConfig:
-    train_data_path: str=os.path.join('artifact','train.csv')
-    test_data_path: str=os.path.join('artifact','test.csv')
-    raw_data_path: str=os.path.join('artifact','raw.csv')
+#we will siplit the data into this folder path
+class DataIngectionConfig:
+    # Paths to save the split data
+    train_data_path: str=os.path.join('artifacts','train.csv')
+    test_data_path: str=os.path.join('artifacts','test.csv')
+    row_data_path: str=os.path.join('artifacts','row.csv')
 
 
 
 class DataIngestion:
     def __init__(self):
-       self.ingestin_config=DataIngestionConfig()
+        self.ingestion_config=DataIngectionConfig() #when we execute this code above 3 particular class variable comes inside this particular
 
+    
+    def initation_data_ingestion(self):
+        logging.info('Entered the data ingestion method or componet')
 
-    def initiate_data_ingestion(self):
-        logging.info('Entered the data ingestion method or component')
         try:
-            df=pd.read_csv('C:\\Workspace\\MlProjectGeneral\\notebook\\data\\stud.csv')
-            logging.info("Read the dataset as datafreame")
-
-            os.makedirs(os.path.dirname(self.ingestin_config.train_data_path),exist_ok=True)
-
-            df.to_csv(self.ingestin_config.raw_data_path,index=False,header=True)
-
-            logging.info("Train test split initiated")
-            train_set,test_set=train_test_split(df,test_size=0.2,random_state=42)
+                  
+            # Read the dataset into a DataFrame
+            df = pd.read_csv('notebook/data/stud.csv')   
+            logging.info('Read the dataset as dataframe')
 
 
 
-            train_set.to_csv(self.ingestin_config.train_data_path,index=False,header=True)
+            # cretate path for split above type data. Train, Test and Row Data
+            os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True)
+            os.makedirs(os.path.dirname(self.ingestion_config.test_data_path),exist_ok=True) 
+            os.makedirs(os.path.dirname(self.ingestion_config.row_data_path),exist_ok=True)
 
 
-            test_set.to_csv(self.ingestin_config.test_data_path,index=False,header=True)
+            # Save the raw dataset
+            df.to_csv(self.ingestion_config.row_data_path, index=False, header=True)
+            logging.info('Saved the raw dataset')
 
-            logging.info("Ingestion of data is completed")
+            logging.info('Train-test split initiated')
 
+            # Split the data into training and testing sets
+            train_set, test_set = train_test_split(df, test_size=0.2, random_state=42)
+
+            # Save the train and test data
+            train_set.to_csv(self.ingestion_config.train_data_path, index=False, header=True)         
+            test_set.to_csv(self.ingestion_config.test_data_path, index=False, header=True)
+            logging.info('Ingestion of the data is completed')
+
+
+            # Return the paths to the train and test data
+            # We need to train and test data path only , data why in retun we writed just two paramaters.
             return(
-                self.ingestin_config.train_data_path,
-                self.ingestin_config.test_data_path,
-                #self.ingestin_config.raw_data_path
+                self.ingestion_config.train_data_path,
+                self.ingestion_config.test_data_path
             )
+            
+        except Exception as e:
 
-        except Exception as e: 
-            #pass
-            raise CustomException(e,sys)
+            raise CustomException(e,sys) 
         
 
-if __name__=="__main__":
+
+# Now we can run this file for creating ,train,test and row data to into articacts folder.
+if __name__=='__main__':
+
     obj=DataIngestion()
-    obj.initiate_data_ingestion()
+    obj.initation_data_ingestion()
+            
 
-
+    
 
 

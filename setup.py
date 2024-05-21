@@ -26,7 +26,7 @@ def get_requirements(file_path: str) -> List[str]:
 
 setup(
     name='MlProjectGeneral_package',
-    version='1.0.0',
+    version='0.0.1',
     description='A sample Python package',
     author='Erkan',
     author_email='erkan48592@hotmail.com',

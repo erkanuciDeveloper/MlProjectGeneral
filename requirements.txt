@@ -2,4 +2,7 @@ pandas
 seaborn==0.13.2
 matplotlib
 scikit-learn
--e .
+catboost
+xgboost
+#-e .  just need to one times, for setup.py file
+# note; after firt execute we can delete this becasue evey pip install this gonna be build all package again again.

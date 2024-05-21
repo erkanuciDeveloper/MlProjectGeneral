@@ -128,6 +128,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# add artifacts file for not be created and saved into git
+artifacts
+
 # Spyder project settings
 .spyderproject
 .spyproject
