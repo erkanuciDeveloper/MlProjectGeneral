@@ -3,4 +3,4 @@ seaborn==0.13.2
 matplotlib
 scikit-learn
 dill
--e .
+#-e .

@@ -12,6 +12,7 @@
 # Each folder where you need to use it as a package or module should have an __init__.py file
 # Create a Components folder and an __init__.py file
 # Create a data_ingestion.py file in the Components folder
+# Run data_ingestion.py for split data
 # Create another file under the Components folder
 # Create an exceptions.py file for managing exception handling
 # Create a logger.py file for logging

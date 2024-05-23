@@ -5,8 +5,10 @@
 #4 Categorical and Nume
 
 
+import os
 import sys
 from dataclasses import dataclass
+
 
 import numpy as np
 import pandas as pd
@@ -18,8 +20,7 @@ from sklearn.preprocessing import OneHotEncoder,StandardScaler
 
 from src.exception import CustomException
 from src.logger import logging
-import os
-import sys
+from src.utils import save_object
 
 @dataclass
 class DataTransformationConfig:
@@ -38,18 +39,14 @@ class DataTransformation:
         '''
 
         try:
-            numeric_columns = [
-                'writing_scrore',
-                'readning_scroe'
-                ]
+            numeric_columns = ['writing_score','reading_score']
             categorical_columns=[
                 'gender',
                 'race_ethnicity',
                 'parental_level_of_education',
                 'lunch',
-                'test_preparation_course'              
-                                
-                ]
+                'test_preparation_course',           
+            ]
             
             #create piple handling mising values and doing the standart sclaer
             # This pipeline for traing data set, how we do fittranform in train data set, this for this
@@ -57,7 +54,7 @@ class DataTransformation:
             num_pipeline=Pipeline(
                 steps=[
                       #handilin missing falues
-                    ('imputer',SimpleImputer(strategy='median')) #handling missing value
+                    ('imputer',SimpleImputer(strategy="median")), #handling missing value
                     ('scaler',StandardScaler())
 
                 ]
@@ -69,9 +66,9 @@ class DataTransformation:
             # then last step do scaler
             cat_pipeline=Pipeline(
                 steps=[
-                    ('imputer', SimpleImputer(strategy='most_frequent'))# for missing value
-                    ('one_hot_encoder',OneHotEncoder())# apply one hot encodeer to convert categorical value to numerical values
-                    ('scaler',StandardScaler())
+                    ('imputer', SimpleImputer(strategy="most_frequent")),# for missing value
+                    ('one_hot_encoder',OneHotEncoder()),# apply one hot encodeer to convert categorical value to numerical values
+                    ('scaler', StandardScaler(with_mean=False))
                 ]              
 
             )
@@ -82,14 +79,14 @@ class DataTransformation:
 
 
             #Now we can give the this pipeline above processs
-            preprocess=ColumnTransformer(
+            preprocessor=ColumnTransformer(
                 [
-                   ('num_pipeline',num_pipeline,numeric_columns) 
+                   ('num_pipeline',num_pipeline,numeric_columns),
                    ('cat_pipeline',cat_pipeline,categorical_columns) 
                 ]
             )
 
-            return preprocess
+            return preprocessor
           
 
         except Exception as e:
@@ -103,64 +100,67 @@ class DataTransformation:
             train_df=pd.read_csv(train_path)
             test_df=pd.read_csv(test_path)
 
-            logging.info('Read traind and test data completed')
-
-            logging.info(' preprocess object')
-
+            logging.info('Numerical columns standard scaler completed')
+            logging.info('Categorical columns encoding completed')
             preprocessing_obj=self.get_data_transformer_object()
             
 
-            target_columnn_name='math_score'
+            target_column_name="math_score"
+            numerical_columns = ["writing_score", "reading_score"]
 
-            numerical_columns=['writing_scrore','readning_scroe']
+            logging.info(f"Train DataFrame columns: {list(train_df.columns)}")
+            logging.info(f"Test DataFrame columns: {list(test_df.columns)}")
+
+
             # Train dataset X and Y
-            input_feature_train_df=train_df.drop(columns=[target_columnn_name],axis=1)
-            target_feature_train_df=train_df[target_columnn_name]
+            input_feature_train_df=train_df.drop(columns=[target_column_name],axis=1)
+            target_feature_train_df=train_df[target_column_name]
 
             #Test dataset
-            input_feature_test_df=test_df.drop(columns=[target_columnn_name],axis=1)
-            target_feature_test_df=test_df[target_columnn_name]
+            input_feature_test_df=test_df.drop(columns=[target_column_name],axis=1)
+            target_feature_test_df=test_df[target_column_name]
 
 
 
             logging.info(
-                f'Applying preprocessing object on training dataframe and testing dataframe'
+                f"Applying preprocessing object on training dataframe and testing dataframe."
             )
+
             # For trainin data we applyed 'fit_transform', and for test dataset we applyed 'transform'.
-            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
+            input_feature_train_arr= preprocessing_obj.fit_transform(input_feature_train_df)
             input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
 
 
 
             #This line of code is using NumPy to concatenate two arrays horizontally. 
             #Combine feature data and target labels into a single array fro training purposes.
-            train_arr=np.c_[
-                input_feature_train_arr,
-                np.array(target_feature_train_df)
+            train_arr = np.c_[
+                input_feature_train_arr, 
+                target_feature_train_df.to_numpy()
             ]
 
-            test_arr=np.c_[
-                            input_feature_test_arr,
-                            np.array(target_feature_test_df)
-                        ]
+            test_arr = np.c_[
+                input_feature_test_arr, 
+                target_feature_test_df.to_numpy()
+            ]
 
+      
             logging.info(f'Saved preprocessing object')
 
 
             #save pickle file
             save_object(
+
                 file_path=self.data_transformation_config.preprocessor_obj_file_path,
                 obj=preprocessing_obj
 
             )
 
 
-
-            return(
+            return (
                 train_arr,
                 test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path
-
+                self.data_transformation_config.preprocessor_obj_file_path,
             )
         except Exception as e:
             raise CustomException(e,sys)
