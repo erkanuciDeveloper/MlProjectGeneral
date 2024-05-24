@@ -46,41 +46,33 @@ def evaluate_models(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray
     try:
         report = {}
 
-        for model_name, model in models.items():
-            logging.info(f"Training {model_name} with GridSearchCV")
-            #param = params.get(model_name, {})
+        for i in range(len(list(models))):
+            model = list(models.values())[i]
+            para=params[list(models.keys())[i]]
 
-            # Perform Grid Search with cross-validation
-            #gs = GridSearchCV(model, param, cv=3)
-           # gs.fit(X_train, y_train)
+            gs = GridSearchCV(model,para,cv=3)
+            gs.fit(X_train,y_train)
 
-
-           # Set best parameters and fit model
-            #best_model = gs.best_estimator_
-            #best_model.fit(X_train, y_train)  # Ensure model is fitted
-            #logging.info(f"Best parameters for {model_name}: {gs.best_params_}")
-
-            # Predictions
-            #y_train_pred = best_model.predict(X_train)
-            #y_test_pred = best_model.predict(X_test)
-            
-
-            #fit the model, trainin model
+            model.set_params(**gs.best_params_)
             model.fit(X_train,y_train)
 
-            y_train_pred=model.predict(X_train)
-            y_test_pred=model.predict(X_test)
+            #model.fit(X_train, y_train)  # Train model
 
-       
-            # Scores
+            y_train_pred = model.predict(X_train)
+
+            y_test_pred = model.predict(X_test)
+
             train_model_score = r2_score(y_train, y_train_pred)
+
             test_model_score = r2_score(y_test, y_test_pred)
 
-            report[model_name] = test_model_score
+            report[list(models.keys())[i]] = test_model_score
 
 
-            logging.info(f"{model_name} R² score on training data: {train_model_score}")
-            logging.info(f"{model_name} R² score on test data: {test_model_score}")
+
+
+            logging.info(f"{model} R² score on training data: {train_model_score}")
+            logging.info(f"{model} R² score on test data: {test_model_score}")
 
           
 
@@ -94,24 +86,27 @@ def evaluate_models(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray
 
 
 
-def convert_pickled_to_text(pickle_file_path):
+def convert_pickle_to_text(file_path):
     """
-    Convert a pickled file to text representation.
+    Load a pickle file and convert its contents to a text representation.
 
-    Args:
-    - pickle_file_path (str): Path to the pickled file.
+    Parameters:
+    file_path (str): The path to the pickle file.
 
     Returns:
-    - str: Text representation of the pickled content.
+    str: A text representation of the pickled content.
     """
-    # Load the pickled object
-    with open(pickle_file_path, "rb") as f:
-        pickled_content = pickle.load(f)
-
-    # Convert the pickled content to a human-readable format (text)
-    text_representation = str(pickled_content)
-
-    return text_representation
+    try:
+        with open(file_path, 'rb') as file:
+            content = pickle.load(file)
+        
+        # Convert the content to a string representation
+        content_str = str(content)
+        return content_str
+    except FileNotFoundError:
+        return f"The file {file_path} was not found."
+    except Exception as e:
+        return f"An error occurred while loading the pickle file: {e}"
 
 
 if  __name__=='__main__':
@@ -119,5 +114,5 @@ if  __name__=='__main__':
  
     preprocessor_pickle_file_path = "artifacts/preprocessor.pkl"
     model_pickle_file_path = "artifacts/model.pkl"
-    text_representation = convert_pickled_to_text(model_pickle_file_path)
-    print(text_representation)
+    pickled_content = convert_pickle_to_text(model_pickle_file_path)
+    print(pickled_content)
