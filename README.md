@@ -24,7 +24,7 @@
 # Now create data_tranformation 
 # Add some fuction into utils
 
-
+# create model trainer file
 
 
 

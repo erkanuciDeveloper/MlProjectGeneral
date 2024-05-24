@@ -120,9 +120,11 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+#'/' min foldeer
+artifacts/
 .env
 .venv
-env/
+env/  
 venv/
 ENV/
 env.bak/

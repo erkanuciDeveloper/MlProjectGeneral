@@ -8,6 +8,10 @@ from dataclasses import dataclass
 
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
+from src.components.model_trainer import (
+    ModelTrainerConfig,
+    ModelTrainer)
+
 
 @dataclass
 class DataIngestionConfig:
@@ -62,8 +66,16 @@ if __name__ == "__main__":
 
         logging.info("Data transformation is completed")
 
+
+        #Model traniner
+        #We send processed data to this fuction, that why we do not need send poreposessor
+        model_trainer=ModelTrainer()
+        r2_score= model_trainer.initiate_model_trainer(train_arr,test_arr,preprocessor_obj_file_path)
+
+        print('r2_score:',r2_score)
     except Exception as e:
         logging.error("An error occurred during the data ingestion or transformation process", exc_info=True)
+        raise CustomException(e,sys)
 
 
 
