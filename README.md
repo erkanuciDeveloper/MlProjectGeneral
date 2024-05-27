@@ -30,5 +30,12 @@
 
 # to do prediction pipeline
 
+# create .ebeextension
+# cretae python confing file
+
+# check eleastik beastalk documnatation
+
+# create application file compy from app.py file
+
 
 
