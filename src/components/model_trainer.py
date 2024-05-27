@@ -11,8 +11,14 @@ from sklearn.ensemble import (
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
+from scikeras.wrappers import KerasRegressor
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
 from xgboost import XGBRegressor
 from sklearn.metrics import r2_score
+import tensorflow as tf
+
 
 from src.exception import CustomException
 from src.logger import logging
@@ -26,7 +32,10 @@ class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
 
-    def initiate_model_trainer(self, train_array, test_array, preprocessor_path):
+    def initiate_model_trainer(self, train_array, test_array, 
+                               preprocessor_path,
+                               epochs=10, batch_size=32
+                               ):
         try:
             logging.info('Splitting training and test input data')
 
@@ -36,6 +45,15 @@ class ModelTrainer:
                 test_array[:, :-1],
                 test_array[:, -1]
             )
+            def create_keras_model():             
+
+                model = Sequential()
+                model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))
+                model.add(Dense(64, activation='relu'))
+                model.add(Dense(1))
+                model.compile(loss='mean_squared_error', optimizer='adam')
+                return model
+
 
             models = {
             "Random Forest": RandomForestRegressor(),
@@ -46,7 +64,9 @@ class ModelTrainer:
             "XGBRegressor": XGBRegressor(),
             "CatBoosting Regressor": CatBoostRegressor(verbose=False),
             "AdaBoost Regressor": AdaBoostRegressor(),
-             }
+            "Keras Regressor": KerasRegressor(build_fn=create_keras_model, verbose=0)
+            }
+             
 
             params = {
                 "Decision Tree": {
@@ -79,13 +99,19 @@ class ModelTrainer:
                 "AdaBoost Regressor": {
                     'learning_rate': [0.1, 0.01, 0.5, 0.001],
                     'n_estimators': [8, 16, 32, 64, 128, 256]
+                },
+                "Keras Regressor": {
+                    'epochs': [epochs],
+                    'batch_size': [batch_size]
                 }
             }
 
 
             # Evaluate models
             model_report:dict=evaluate_models(X_train=X_train,y_train=y_train,X_test=X_test,y_test=y_test,
-                                             models=models,params=params)
+                                             models=models,params=params,
+                                             epochs=epochs, batch_size=batch_size
+                                             )
             
             # Find the best model from dict
             best_model_score = max(model_report.values())

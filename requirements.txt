@@ -5,4 +5,8 @@ scikit-learn
 dill
 xgboost
 catboost
+tensorflow
+scikeras
+Flask
+python-dotenv
 #-e .

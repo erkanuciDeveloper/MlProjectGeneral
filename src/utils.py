@@ -9,6 +9,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 import pickle
+from scikeras.wrappers import KerasRegressor
 
 from src.exception import CustomException
 from src.logger import logging
@@ -28,7 +29,12 @@ def save_object(file_path,obj):
 
 
 
-def evaluate_models(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray, y_test: np.ndarray, models: Dict[str, Any], params: Dict[str, Any]):
+def evaluate_models(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray, y_test: np.ndarray, models: Dict[str, Any], 
+                    params: Dict[str, Any],
+                    epochs: int = 10, batch_size: int = 32
+                    
+                    
+                    ):
     """
     Evaluate multiple models using GridSearchCV for hyperparameter tuning and return their test R² scores.
 
@@ -49,6 +55,10 @@ def evaluate_models(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray
         for i in range(len(list(models))):
             model = list(models.values())[i]
             para=params[list(models.keys())[i]]
+
+
+            if isinstance(model, KerasRegressor):
+                para.update({'epochs': [epochs], 'batch_size': [batch_size]})
 
             gs = GridSearchCV(model,para,cv=3)
             gs.fit(X_train,y_train)
@@ -107,6 +117,17 @@ def convert_pickle_to_text(file_path):
         return f"The file {file_path} was not found."
     except Exception as e:
         return f"An error occurred while loading the pickle file: {e}"
+
+
+def load_object(file_path):
+    try:
+        with open(file_path, "rb") as file_obj:
+            return pickle.load(file_obj)
+
+    except Exception as e:
+        raise CustomException(e, sys)
+
+
 
 
 if  __name__=='__main__':

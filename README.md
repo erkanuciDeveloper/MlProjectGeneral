@@ -26,5 +26,9 @@
 
 # create model trainer file
 
+# create app.py file
+
+# to do prediction pipeline
+
 
 
